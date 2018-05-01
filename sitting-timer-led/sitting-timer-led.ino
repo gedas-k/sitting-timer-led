@@ -1,5 +1,5 @@
 //set sitting time in secounds(CHANGE TO MINUTES):
-int sitTime = 30;
+int sitTime = 600;
 //set rest time in secounds(CHANGE TO MINUTES):
 int restTime = 10;
 //set Max brightness:
@@ -189,7 +189,7 @@ void loop() {
       analogWrite(leds[i], 0);
     }
     
-    delay(500);
+    delay(50);
 
     //On:
     for (int i=ledCount; i>-1; i--)
@@ -197,6 +197,6 @@ void loop() {
       analogWrite(leds[i], 255);
     }
   
-    delay(500);
+    delay(50);
   }
 }
