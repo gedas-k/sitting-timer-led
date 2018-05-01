@@ -1,9 +1,9 @@
 //set sitting time in secounds(CHANGE TO MINUTES):
-int sitTime = 10;
+int sitTime = 30;
 //set rest time in secounds(CHANGE TO MINUTES):
 int restTime = 10;
 //set Max brightness:
-int maxBrightness = 255;
+int maxBrightness = 150;
 //set ledCount:
 int ledCount = 7;
 
@@ -11,9 +11,9 @@ int ledCount = 7;
 //restTime=restTime*60; //change to secounds
 int unit = maxBrightness / ledCount; //unit for calculating brightness
 
-// LEDs from right to left connected to these pins
-int leds[] = {5, 2, 3, 6, 7, 8, 11};
-//int Bright[] = {0, 1, 2, 3, 4, 5, 6};
+int leds[] = {5, 2, 3, 6, 7, 8, 11};   // LEDs from right to left connected to these pins
+int buttonPin = 12;          // the number of the pushbutton pin
+int buttonState = 0;         // variable for reading the pushbutton status
 
 //Brightness function:   
 int brightness(int pin, int brightX)
@@ -27,15 +27,66 @@ int brightness(int pin, int brightX)
   {
     bright = 0;
   }
+  
+  Serial.print("Bright "); Serial.println(pin); Serial.println(": "); Serial.println(bright);
   return bright;
+}
+
+// functions for animation:
+void onAll()
+{
+  for (int i = ledCount; i > -1; i--)
+  {
+  analogWrite(leds[i], 255);
+  }
+}
+
+void offAll()
+{
+  for (int i = ledCount; i > -1; i--)
+  {
+    analogWrite(leds[i], 0);
+  }
+}
+
+void LtoR()
+{
+  for (int i = ledCount; i > -1; i--)
+  {
+    analogWrite(leds[i], 255);
+    delay(60);
+    analogWrite(leds[i], 0);
+  }
+}
+
+void RtoL()
+{
+  for (int i = 0; i < ledCount; i++)
+  {
+    analogWrite(leds[i], 255);
+    delay(60);
+    analogWrite(leds[i], 0);
+  }
+}
+
+void charge()
+{
+  for (int i = ledCount; i > -1; i--)
+  {
+    analogWrite(leds[i], 255);
+    delay(100);
+  }
 }
 
 void setup() {
 
+  Serial.begin(9600);
+
   //sitTime=sitTime*1000; //CHANGE TO MINUTES
   //restTime=restTime*1000; //CHANGE TO MINUTES
 
-
+  // initialize the pushbutton pin as an input:
+  pinMode(buttonPin, INPUT);
 
   // initialize digital pin for leds as an output.
   for (int i = 0; i < ledCount; i++)
@@ -43,49 +94,24 @@ void setup() {
     pinMode(leds[i], OUTPUT);
   }
 
-  //Starting animation
-  // LEDs from right to left 5, 2, 3, 6, 7, 8, 11
+  //Starting animation:
   //left to right
-  for (int i = ledCount; i > -1; i--)
-  {
-    analogWrite(leds[i], 255);
-    delay(60);
-    analogWrite(leds[i], 0);
-  }
-
+  LtoR();
   delay(100);
 
   //right to left
-  for (int i = 0; i < ledCount; i++)
-  {
-    analogWrite(leds[i], 255);
-    delay(60);
-    analogWrite(leds[i], 0);
-  }
-
+  RtoL();
+ 
   //charging left to right
-  for (int i = ledCount; i > -1; i--)
-  {
-    analogWrite(leds[i], 255);
-    delay(100);
-  }
-
+  charge();
   delay(100);
 
   //off all
-  for (int i = ledCount; i > -1; i--)
-  {
-    analogWrite(leds[i], 0);
-  }
-
+  offAll();
   delay(100);
 
   //on all
-  for (int i = ledCount; i > -1; i--)
-  {
-    analogWrite(leds[i], 255);
-  }
-
+  onAll();
   delay(100);
 
 }
@@ -96,6 +122,47 @@ void loop() {
   for (int i = ledCount; i > -1; i--)
   {
     analogWrite(leds[i], 0);
+  }
+
+  // read the state of the pushbutton value:
+  buttonState = digitalRead(buttonPin);
+
+  //start timer:
+  while (buttonState == LOW)
+  {
+    //blink:
+    for (int i = ledCount; i > -1; i--)
+    {
+      analogWrite(leds[i], 255);
+    } 
+
+    //delay while checking button:
+    for (int i = 0; i<500; i++)
+    {
+      buttonState = digitalRead(buttonPin);
+      if (buttonState == HIGH)
+      {
+        break;
+      }
+      delay(1);
+    } 
+    
+    for (int i = ledCount; i > -1; i--)
+    {
+      analogWrite(leds[i], 0);
+    }     
+
+    //delay while checking button:
+    for (int i = 0; i<500; i++)
+    {
+      buttonState = digitalRead(buttonPin);
+      if (buttonState == HIGH)
+      {
+        break;
+      }
+      delay(1);
+    }
+    
   }
 
   //Loop for sitting:
