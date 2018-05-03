@@ -1,27 +1,45 @@
 //set sitting time in secounds(CHANGE TO MINUTES):
-int sitTime = 600;
+int sitTime = 20;
 //set rest time in secounds(CHANGE TO MINUTES):
-int restTime = 10;
+int restTime = 5;
 //set Max brightness:
-int maxBrightness = 150;
+//int maxBrightness = 150;
 //set ledCount:
 int ledCount = 7;
 
 //sitTime=sitTime*60; //change to secounds
 //restTime=restTime*60; //change to secounds
-int unit = maxBrightness / ledCount; //unit for calculating brightness
 
 int leds[] = {5, 2, 3, 6, 7, 8, 11};   // LEDs from right to left connected to these pins
 int buttonPin = 12;          // the number of the pushbutton pin
 int buttonState = 0;         // variable for reading the pushbutton status
 
-//Brightness function:   
-int brightness(int pin, int brightX)
+// function for max brightness:
+int maxBrightness()
 {
-  int bright = ledCount*(brightX-(unit*(pin+1))+unit);
-  if (bright > maxBrightness)
+  int maxBrightness = analogRead(A0);
+  maxBrightness = map(maxBrightness, 50, 1000, 10, 255);
+  
+  if (maxBrightness > 255)
   {
-    bright = maxBrightness;
+    maxBrightness = 255;
+  }
+  else if (maxBrightness < 10)
+  {
+    maxBrightness = 10;
+  }
+  
+  return maxBrightness;
+}
+
+//Brightness function:   
+int brightness(int pin, int brightX, int maxBrig)
+{
+  int unit = maxBrig / ledCount;                   //unit for calculating brightness
+  int bright = ledCount*(brightX-(unit*(pin+1))+unit);
+  if (bright > maxBrig)
+  {
+    bright = maxBrig;
   }
   else if (bright < 0)
   {
@@ -130,15 +148,24 @@ void loop() {
   //start timer:
   while (buttonState == LOW)
   {
+    int maxBrig = maxBrightness();
     //blink:
+    /*
     for (int i = ledCount; i > -1; i--)
     {
-      analogWrite(leds[i], 255);
+      analogWrite(leds[i], maxBrig);
     } 
-
+*/
     //delay while checking button:
-    for (int i = 0; i<500; i++)
+    for (int i = 0; i<800; i++)
     {
+      maxBrig = maxBrightness();
+      
+        for (int i = ledCount; i > -1; i--)
+      {
+        analogWrite(leds[i], maxBrig);
+      } 
+      
       buttonState = digitalRead(buttonPin);
       if (buttonState == HIGH)
       {
@@ -153,7 +180,7 @@ void loop() {
     }     
 
     //delay while checking button:
-    for (int i = 0; i<500; i++)
+    for (int i = 0; i<200; i++)
     {
       buttonState = digitalRead(buttonPin);
       if (buttonState == HIGH)
@@ -168,19 +195,20 @@ void loop() {
   //Loop for sitting:
   for (int i = 0; i < sitTime; i++)
   {
-    int brightX = map(i, 0, sitTime, 0, maxBrightness); //maping for brighten
+    int maxBrig = maxBrightness();
+    int brightX = map(i, 0, sitTime, 0, maxBrig); //maping for brighten
 
     //Turn on what needs to be on:
     for (int j=0; j<ledCount; j++)
     {
-      analogWrite(leds[j], brightness(j, brightX));
+      analogWrite(leds[j], brightness(j, brightX, maxBrig));
     }
-
     delay(1000);
+    
   }
     
   //Loop for resting:
-  for (int j = 0; j < restTime; j++)
+  for (int j = 0; j < restTime*10; j++)
   {
     //Flash while resting:
     //Off:
