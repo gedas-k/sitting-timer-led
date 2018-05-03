@@ -53,6 +53,33 @@ int brightness(int pin, int brightX, int maxBrig)
   return bright;
 }
 
+// function for stoping counter
+bool kill()
+{
+  for (i=0; i<20; i++)
+  {
+    if (buttonState == HIGH && i>19)
+    {
+      onAll();
+      delay(200);
+      offAll();
+      while (buttonState == HIGH)
+      {
+        buttonState = digitalRead (buttonPin);
+      }
+      return true;
+    }
+    else if (buttonState == HIGH)
+    {
+      delay(100);
+    }
+    else if (buttonState == LOW)
+    {
+      break;
+    }
+  }
+}
+
 // functions for animation:
 void onAll()
 {

@@ -5,4 +5,5 @@ Working on stop button.
 Plans:
 
 Mini button press game, to distract from work;
-Change to pulsing animation when on brake.
+Change to pulsing animation when on brake;
+Add buzzer??
