@@ -14,6 +14,7 @@ int unit = maxBrightness / ledCount; //unit for calculating brightness
 int leds[] = {5, 2, 3, 6, 7, 8, 11};   // LEDs from right to left connected to these pins
 int buttonPin = 12;          // the number of the pushbutton pin
 int buttonState = 0;         // variable for reading the pushbutton status
+int potPin = 1; // check pin nr
 
 //Brightness function:   
 int brightness(int pin, int brightX)
@@ -113,7 +114,21 @@ void setup() {
   //on all
   onAll();
   delay(100);
-
+  
+  //time selector:
+  while (buttonState == LOW)
+  {
+    int potVal = analogRead(potPin);
+    int allTimeLED = map (potVal, 0, 1023, 1, LEDcount);
+    for (i=0; i < allTimeLED; i++);
+    {
+      analogWrite (leds [i], 255);
+    }
+    int allTime = allTimeLED * 900;
+    sitTime = allTime * 0,92;
+    restTime = allTime - sitTime;
+    buttonState = digitalRead (buttonPin);
+  }
 }
 
 void loop() {
