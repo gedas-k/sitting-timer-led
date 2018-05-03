@@ -3,4 +3,7 @@ Code for Arduino, to sheadule caffe brake.
 Plans:
 
 Mini button press game, to distract from work;
-Add brightens selector while charging.
+
+Add time selector;
+Add brightens selector while charging;
+Change to pulsing animation when on brake.
