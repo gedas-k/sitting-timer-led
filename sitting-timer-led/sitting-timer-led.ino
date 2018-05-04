@@ -53,33 +53,6 @@ int brightness(int pin, int brightX, int maxBrig)
   return bright;
 }
 
-// function for stoping counter
-bool kill()
-{
-  for (i=0; i<20; i++)
-  {
-    if (buttonState == HIGH && i>19)
-    {
-      onAll();
-      delay(200);
-      offAll();
-      while (buttonState == HIGH)
-      {
-        buttonState = digitalRead (buttonPin);
-      }
-      return true;
-    }
-    else if (buttonState == HIGH)
-    {
-      delay(100);
-    }
-    else if (buttonState == LOW)
-    {
-      break;
-    }
-  }
-}
-
 // functions for animation:
 void onAll()
 {
@@ -123,6 +96,38 @@ void charge()
   {
     analogWrite(leds[i], 255);
     delay(100);
+  }
+}
+
+// function for stoping counter
+bool kill()
+{
+  for (int i=0; i<20; i++)
+  {
+    buttonState = digitalRead (buttonPin);
+    if (buttonState == HIGH && i>18)
+    {
+      onAll();
+      delay(100);
+      offAll();
+      delay(100);
+      onAll();
+      delay(100);
+      offAll();
+      while (buttonState == HIGH)
+      {
+        buttonState = digitalRead (buttonPin);
+      }
+      return true;
+    }
+    else if (buttonState == HIGH)
+    {
+      delay(100);
+    }
+    else if (buttonState == LOW)
+    {
+      return false;
+    }
   }
 }
 
@@ -200,14 +205,9 @@ void loop() {
   //start timer:
   while (buttonState == LOW)
   {
+//    Serial.print("Start timer "); //Serial.println(pin);
     int maxBrig = maxBrightness();
-    //blink:
-    /*
-    for (int i = ledCount; i > -1; i--)
-    {
-      analogWrite(leds[i], maxBrig);
-    } 
-*/
+    
     //delay while checking button:
     for (int i = 0; i<800; i++)
     {
@@ -244,19 +244,34 @@ void loop() {
     
   }
 
+  delay(1000);
+
   //Loop for sitting:
   for (int i = 0; i < sitTime; i++)
   {
+    bool reset = false;
     int maxBrig = maxBrightness();
-    int brightX = map(i, 0, sitTime, 0, maxBrig); //maping for brighten
+    int brightX = map(i, 0, sitTime, 0, maxBrig); // maping for brighten
 
     //Turn on what needs to be on:
     for (int j=0; j<ledCount; j++)
     {
       analogWrite(leds[j], brightness(j, brightX, maxBrig));
     }
-    delay(1000);
-    
+  
+    for (int k=0; k<10; k++) // delay while checking button press
+    {
+      buttonState = digitalRead(buttonPin);
+      if (buttonState == HIGH)
+      {
+        reset = kill();
+      }
+      delay(100);
+    }
+    if (reset == true)
+    {
+      break;
+    }
   }
     
   //Loop for resting:
