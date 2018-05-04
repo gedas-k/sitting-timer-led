@@ -8,6 +8,8 @@ int restTime = 5;
 int ledCount = 7;
 // secounds for one LED:
 int ledTime = 10;
+// pulsing speed:
+int dimSpeed = 2;
 
 //sitTime=sitTime*60; //change to secounds
 //restTime=restTime*60; //change to secounds
@@ -114,7 +116,7 @@ void setup() {
   {
     pinMode(leds[i], OUTPUT);
   }
-
+/*
   //Starting animation:
   //left to right
   LtoR();
@@ -134,7 +136,7 @@ void setup() {
   //on all
   onAll();
   delay(100);
-  
+ */ 
   //time selector:
   while (buttonState == LOW)
   {
@@ -218,7 +220,8 @@ void loop() {
   }
 
   //Loop for sitting:
-  for (int i = 0; i < sitTime; i++)
+  sitTime = 2;                      //DELETE
+  for (int i = 0; i < sitTime; i++) 
   {
     int maxBrig = maxBrightness();
     int brightX = map(i, 0, sitTime, 0, maxBrig); //maping for brighten
@@ -231,8 +234,9 @@ void loop() {
     delay(1000);
     
   }
-    
-  //Loop for resting:
+
+/*    
+  //Loop for starting brake:
   for (int j = 0; j < restTime*10; j++)
   {
     //Flash while resting:
@@ -251,5 +255,39 @@ void loop() {
     }
   
     delay(50);
+  }
+*/
+  //Brake:
+  // pulsing:
+  bool fade;
+  int pulse = 11;
+  for (int i = 0; i < (restTime*100); i++)
+  {
+    if (pulse <= (10+dimSpeed))
+    {
+      fade = false;
+      pulse = 11;
+    }
+    else if (pulse >= (256-dimSpeed))
+    {
+      fade = true;
+      pulse = 255;
+    }
+
+    if (fade == false)
+    {
+      pulse = pulse + dimSpeed;;
+    }
+    else
+    {
+      pulse = pulse - dimSpeed;
+    }
+
+    for (int j = ledCount; j > -1; j--)
+    {
+      analogWrite(leds[j], pulse);
+    }
+    delay(10);
+    //buttonState = digitalRead(buttonPin); //Add kill
   }
 }
