@@ -8,6 +8,8 @@ int restTime = 5;
 int ledCount = 7;
 // secounds for one LED:
 int ledTime = 10;
+// pulsing speed:
+int dimSpeed = 2;
 
 //sitTime=sitTime*60; //change to secounds
 //restTime=restTime*60; //change to secounds
@@ -16,6 +18,7 @@ int leds[] = {5, 2, 3, 6, 7, 8, 11};   // LEDs from right to left connected to t
 int buttonPin = 12;          // the number of the pushbutton pin
 int buttonState = 0;         // variable for reading the pushbutton status
 int potPin = A0;             // potentiometer pin
+int wins = 0, loses = 0;    // for counting score in minigame
 
 // function for max brightness:
 int maxBrightness()
@@ -70,32 +73,225 @@ void offAll()
   }
 }
 
-void LtoR()
+void RtoL(int pause)
 {
-  for (int i = ledCount; i > -1; i--)
+  for (int i = ledCount-1; i >= 0; i--)
   {
     analogWrite(leds[i], 255);
-    delay(60);
+    delay(pause);
     analogWrite(leds[i], 0);
   }
 }
 
-void RtoL()
+void LtoR(int pause)
 {
   for (int i = 0; i < ledCount; i++)
   {
     analogWrite(leds[i], 255);
-    delay(60);
+    delay(pause);
     analogWrite(leds[i], 0);
   }
 }
 
-void charge()
+void chargeL(int pause)
 {
-  for (int i = ledCount; i > -1; i--)
+  for (int i = 0; i < ledCount; i++)
   {
     analogWrite(leds[i], 255);
-    delay(100);
+    delay(pause);
+  }
+  offAll();
+}
+
+void chargeR(int pause)
+{
+  for (int i = ledCount-1; i > -1; i--)
+  {
+    analogWrite(leds[i], 255);
+    delay(pause);
+  }
+  offAll();
+}
+
+bool win()
+{
+  offAll();
+  chargeL(50);
+  offAll();
+  wins = wins + 1;  //counts score
+
+  //show score:
+  for (int i = 0; i < 3; i++)
+  {
+    for (int j = 0; j < wins; j++)
+    {
+      analogWrite(leds[j], 255);
+    }
+    for (int j = 1; j <= loses; j++)
+    {
+      analogWrite(leds[ledCount-j], 255);
+    }
+    delay(500);
+    for (int j = 0; j < wins; j++)
+    {
+      analogWrite(leds[j], 0);
+    }
+    for (int j = 1; j <= loses; j++)
+    {
+      analogWrite(leds[ledCount-j], 0);
+    }
+    delay(500);
+  }
+
+  //finishes game:
+  if (wins < 3)
+  {
+    return true;
+  }
+  else if (wins == 3)
+  {
+    return false;
+  }
+}
+
+bool lost()
+{
+  offAll();
+  chargeR(100);
+  offAll();
+  loses = loses + 1; //counts score
+
+  //show score:
+  for (int i = 0; i < 3; i++)
+  {
+    for (int j = 0; j < wins; j++)
+    {
+      analogWrite(leds[j], 255);
+    }
+    for (int j = 1; j <= loses; j++)
+    {
+      analogWrite(leds[ledCount-j], 255);
+    }
+    delay(500);
+    for (int j = 0; j < wins; j++)
+    {
+      analogWrite(leds[j], 0);
+    }
+    for (int j = 1; j <= loses; j++)
+    {
+      analogWrite(leds[ledCount-j], 0);
+    }
+    delay(500);
+  }
+
+  //finishes game:
+  if (loses < 3)
+  {
+    return true;
+  }
+  else if (loses == 3)
+  {
+    return false;
+  }
+}
+
+int game(int diff)
+{
+  bool goal = false;
+  analogWrite(leds[0], 255);
+  delay(diff);
+  analogWrite(leds[0], 0);
+  while (goal == false)
+  {
+    //Left to right:
+    for (int i = 1; i <= ledCount; i++)
+    {
+      //moves:
+      if (i < (ledCount-1))
+      {
+        analogWrite(leds[i], 255);
+        delay(diff);
+        analogWrite(leds[i], 0);
+      }
+      //checks if bloked:
+      else
+      {
+        analogWrite(leds[i], 255);
+        delay(diff);
+        analogWrite(leds[i], 0);
+        
+        int block = random(10);
+        if (block < 9) // 90% block chance
+        {
+          break;
+        }
+        //if not bloked:
+        else
+        {
+          delay(diff);
+          goal = true;
+          return win();
+        }
+      }
+
+    }
+
+    //Right to left:
+    bool forth = false;
+    for (int i = (ledCount - 2); i >= -1; i--)
+    {
+      //moves and checks if button pressed
+      if (i > 0)
+      {
+        analogWrite(leds[i], 255);
+        for (int j = 0; j < 100; j++)
+        {
+          buttonState = digitalRead (buttonPin);
+          //if pressed to early:
+          if (buttonState == HIGH)
+          {
+            goal = true;
+            return lost();
+          }
+          delay(diff/100);
+        }
+        analogWrite(leds[i], 0);
+      }
+      //actions on last LED:
+      else if (i == 0)
+      {
+        analogWrite(leds[i], 255);
+        //checks button state:
+        for (int j=0; j < 100; j++)
+        {
+          buttonState = digitalRead (buttonPin);
+          if (buttonState == HIGH)
+          {
+            diff = diff - (diff/5);
+            //continue dalay for smooter action:
+            for (; j < 100; j++)
+            {
+              delay(diff/100);
+            }
+            analogWrite(leds[i], 0);
+            forth = true;
+          }
+          delay(diff/100);
+        }
+      }
+      //if button pressed:
+      if (forth == true)
+      {
+        break;
+      }
+      //if button not pressed:
+      else if (i == -1)
+      {
+        goal == true;
+        return lost();
+      }
+    }
+  
   }
 }
 
@@ -149,14 +345,14 @@ void setup() {
 
   //Starting animation:
   //left to right
-  LtoR();
+  LtoR(60);
   delay(100);
 
   //right to left
-  RtoL();
+  RtoL(60);
  
   //charging left to right
-  charge();
+  chargeL(100);
   delay(100);
 
   //off all
@@ -193,11 +389,30 @@ void setup() {
 
 void loop() {
 
-  //off all
-  for (int i = ledCount; i > -1; i--)
+/*
+  //DELETE:  ///////////////////////////////////////////////////////////////////////////
+  while (buttonState == LOW)
   {
-    analogWrite(leds[i], 0);
+    buttonState = digitalRead (buttonPin);
   }
+
+  offAll();
+  delay(1000);
+
+  int gaming = true;
+  int score = 0;
+  int diff = 400; // difficulty
+  while (gaming == true)
+  {
+    gaming = game(diff);
+  }
+
+  //TILL HERE
+*/
+  //off all
+  offAll();
+
+  delay (500);
 
   // read the state of the pushbutton value:
   buttonState = digitalRead(buttonPin);
@@ -247,7 +462,7 @@ void loop() {
   delay(1000);
 
   //Loop for sitting:
-  for (int i = 0; i < sitTime; i++)
+  for (int i = 0; i < sitTime; i++) 
   {
     bool reset = false;
     int maxBrig = maxBrightness();
@@ -273,25 +488,61 @@ void loop() {
       break;
     }
   }
-    
-  //Loop for resting:
-  for (int j = 0; j < restTime*10; j++)
-  {
-    //Flash while resting:
-    //Off:
-    for (int i = ledCount; i > -1; i--)
-    {
-      analogWrite(leds[i], 0);
-    }
-    
-    delay(50);
 
-    //On:
-    for (int i=ledCount; i>-1; i--)
-    {
-      analogWrite(leds[i], 255);
-    }
+  //Wait for button press:
+  buttonState = digitalRead(buttonPin);
+  while (buttonState == LOW)
+  {
+    buttonState = digitalRead(buttonPin);
+    //Add animation to stop sitting: /////////////////////////////////////////////
+    onAll();
+    delay(10);
+    offAll();
+    delay(10);
+  }
+
+  delay(1000);
   
-    delay(50);
+  //Ping pong mini game to distract from work:
+  int gaming = true;
+  int score = 0;
+  int diff = 400; // difficulty
+  while (gaming == true)
+  {
+    gaming = game(diff);
+  }
+  
+  //Brake:
+  // pulsing:
+  bool fade;
+  int pulse = 11;
+  for (int i = 0; i < (restTime*100); i++)
+  {
+    if (pulse <= (10+dimSpeed))
+    {
+      fade = false;
+      pulse = 11;
+    }
+    else if (pulse >= (256-dimSpeed))
+    {
+      fade = true;
+      pulse = 255;
+    }
+
+    if (fade == false)
+    {
+      pulse = pulse + dimSpeed;;
+    }
+    else
+    {
+      pulse = pulse - dimSpeed;
+    }
+
+    for (int j = ledCount; j > -1; j--)
+    {
+      analogWrite(leds[j], pulse);
+    }
+    delay(10);
+    //buttonState = digitalRead(buttonPin); //Add kill
   }
 }
