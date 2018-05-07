@@ -1,9 +1,6 @@
 Code for Arduino, to sheadule caffe brake.
 
-Working on:
-Ze GAME!
-Pulsing light.
-
 Plans:
 
+Distractin animation after time is over;
 Wait for button press after sitting time is over.
